@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IF KM/KA</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/heroicons@2.0.18/24/outline/index.js"></script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.5s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <header class="bg-gradient-to-r from-blue-600 to-purple-600 text-white py-6 shadow-lg">
+        <div class="container mx-auto px-4">
+            <h1 class="text-3xl font-bold text-center">Dashboard Kelas karyawan</h1>
+            <h2 class="text-3xl font-bold text-center">Horizon University Indonesia</h2>
+            <p class="text-center mt-2">- Semoga menjadi mahasiswa yang aw aw -.</p>
+        </div>
+    </header>
+
+    <main class="container mx-auto px-4 py-8">
+        <!-- Filter dan Tambah -->
+        <div class="mb-6 flex flex-wrap items-center justify-between gap-4">
+            <div class="flex gap-4">
+                <button id="filterAll" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition">Semua</button>
+                <button id="filterPagi" class="px-4 py-2 bg-blue-200 text-blue-700 rounded-lg hover:bg-blue-300 transition">Kelas Pagi</button>
+                <button id="filterMalam" class="px-4 py-2 bg-purple-200 text-purple-700 rounded-lg hover:bg-purple-300 transition">Kelas Malam</button>
+            </div>
+            <button id="addBtn" class="bg-green-500 text-white px-6 py-2 rounded-lg hover:bg-green-600 flex items-center gap-2">
+                <svg class="w-5 h-5"><path d="M10 4a6 6 0 100 12 6 6 0 000-12zm0 2v4H6v2h4v4h2v-4h4v-2h-4V6h-2z"></path></svg>
+                Tambah Dosen
+            </button>
+        </div>
+
+        <!-- Daftar Card -->
+        <div id="listContainer" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Cards akan dimasukkan di sini via JS -->
+        </div>
+
+        <!-- Modal Tambah/Edit -->
+        <div id="modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden">
+            <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
+                <h2 id="modalTitle" class="text-xl font-semibold mb-4">Tambah Dosen Baru</h2>
+                <form id="form" class="space-y-4">
+                    <input id="nama" type="text" placeholder="Nama Dosen" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <input id="mataKuliah" type="text" placeholder="Nama Mata Kuliah" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <select id="kelas" class="w-full p-3 border border-gray-300 rounded-lg">
+                        <option value="Pagi">Pagi</option>
+                        <option value="Malam">Malam</option>
+                    </select>
+                    <input id="whatsapp" type="text" placeholder="Nomor WhatsApp (contoh: 6281234567890)" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <input id="linkGrup" type="url" placeholder="Link Grup WhatsApp" class="w-full p-3 border border-gray-300 rounded-lg" required>
+                    <div class="flex gap-4">
+                        <button type="submit" class="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600">Simpan</button>
+                        <button type="button" id="cancelBtn" class="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600">Batal</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // Fungsi untuk menyimpan data ke localStorage
+        function saveData() {
+            localStorage.setItem('dosenData', JSON.stringify(data));
+        }
+
+        // Fungsi untuk memuat data dari localStorage
+        function loadData() {
+            const stored = localStorage.getItem('dosenData');
+            if (stored) {
+                return JSON.parse(stored);
+            }
+            // Data default jika belum ada
+            return [
+                // kelas pagi
+                { id: 1, nama: "M. Jembar Jomantara", mataKuliah: "ICT 003-Pemrograman Berorientasi Objek Java 1", kelas: "Pagi", whatsapp: "6281382796289", linkGrup: "https://chat.whatsapp.com/JFRuORZ3VOF9vnMW8WraIr?mode=ems_copy_c" },
+                { id: 2, nama: "Eggy Rismasellia", mataKuliah: "GEN 002-Bahasa Indonesia", kelas: "Pagi", whatsapp: "6281288821197", linkGrup: "https://chat.whatsapp.com/HXsXm0eBuYD8o4iM8hCijP?mode=ems_wa_t" },
+                { id: 3, nama: "Dwi Nita Febriyanti", mataKuliah: "GEN 022-Global Workplace English Program I", kelas: "Pagi", whatsapp: "6287893138975", linkGrup: "https://chat.whatsapp.com/CANdUsMp4SX1RUhPuJwBma?mode=ems_copy_t" },
+                { id: 4, nama: "Arif Budimansyah Purba", mataKuliah: "ICT 001-Algoritma", kelas: "Pagi", whatsapp: "6285693667891", linkGrup: "https://chat.whatsapp.com/BfAy0teQmbu4D8TLGPTM34?mode=ac_t" },
+                { id: 5, nama: "Cepi Grahana", mataKuliah: "MAT 001-Kalkulus", kelas: "Pagi", whatsapp: "6281316223286", linkGrup: "https://chat.whatsapp.com/BoJ6Cz6Z5MG6peZwLeNV8Q?mode=ems_copy_t" },
+                { id: 6, nama: "Muhammad Hatta", mataKuliah: "GEN 002-Bahasa Indonesiaa", kelas: "Malam", whatsapp: "6285777107500", linkGrup: " https://chat.whatsapp.com/GCFQGOtcsgS3e5suNvR6IB" },
+                { id: 7, nama: "M. Jembar Jomantara", mataKuliah: "ICT 003-Pemrograman Berorientasi Objek Javaa 1", kelas: "Malam", whatsapp: "6281382796289", linkGrup: " https://chat.whatsapp.com/GCFQGOtcsgS3e5suNvR6IB?mode=ems_share_t" },
+                { id: 8, nama: "Dwi Nita Febriyanti", mataKuliah: "GEN 022-Global Workplace Englishh Program I", kelas: "Malam", whatsapp: "6287893138975", linkGrup: " https://chat.whatsapp.com/LTdUZNw66F1BuEHvoeVeDQ" },
+                { id: 9, nama: "Arif Budimansyah Purba", mataKuliah: "ICT 001-Algoritmaa", kelas: "Malam", whatsapp: "6285693667891", linkGrup: "https://chat.whatsapp.com/BfAy0teQmbu4D8TLGPTM34?mode=ac_t" },
+                { id: 10, nama: "Cepi Grahana", mataKuliah: "MAT 001-Kalkuluss", kelas: "Malam", whatsapp: "6281316223286", linkGrup: "https://chat.whatsapp.com/F0hHWbBSJaf3RRXwkRpZx6" }
+            ];
+        }
+
+        let data = loadData();
+        let currentFilter = 'all';
+        let editId = null;
+
+        const listContainer = document.getElementById('listContainer');
+        const modal = document.getElementById('modal');
+        const modalTitle = document.getElementById('modalTitle');
+        const form = document.getElementById('form');
+        const nama = document.getElementById('nama');
+        const mataKuliah = document.getElementById('mataKuliah');
+        const kelas = document.getElementById('kelas');
+        const whatsapp = document.getElementById('whatsapp');
+        const linkGrup = document.getElementById('linkGrup');
+        const addBtn = document.getElementById('addBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const filterAll = document.getElementById('filterAll');
+        const filterPagi = document.getElementById('filterPagi');
+        const filterMalam = document.getElementById('filterMalam');
+
+        // Render cards
+        function render(filteredData = data) {
+            listContainer.innerHTML = '';
+            filteredData.forEach(item => {
+                const card = document.createElement('div');
+                card.className = 'bg-white p-6 rounded-lg shadow-md hover:shadow-lg transition fade-in';
+                card.innerHTML = `
+                    <div class="text-lg font-semibold mb-2">${item.nama}</div>
+                    <div class="text-sm text-gray-500 mb-1 font-medium">Mata Kuliah: ${item.mataKuliah}</div>
+                    <div class="text-gray-600 mb-1">Kelas: ${item.kelas}</div>
+                    <div class="mb-1"><a href="https://wa.me/${item.whatsapp}" target="_blank" class="text-blue-600 hover:underline">WhatsApp: ${item.whatsapp}</a></div>
+                    <div class="mb-4"><a href="${item.linkGrup}" target="_blank" class="text-green-600 hover:underline">Link Grup</a></div>
+                    <div class="flex gap-2">
+                        <button onclick="editItem(${item.id})" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Edit</button>
+                        <button onclick="deleteItem(${item.id})" class="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600">Delete</button>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        // Filter
+        function filterData(filter) {
+            currentFilter = filter;
+            let filtered;
+            if (filter === 'Pagi') filtered = data.filter(d => d.kelas === 'Pagi');
+            else if (filter === 'Malam') filtered = data.filter(d => d.kelas === 'Malam');
+            else filtered = data;
+            render(filtered);
+        }
+
+        filterAll.addEventListener('click', () => filterData('all'));
+        filterPagi.addEventListener('click', () => filterData('Pagi'));
+        filterMalam.addEventListener('click', () => filterData('Malam'));
+
+        // Add/Edit
+        addBtn.addEventListener('click', () => {
+            editId = null;
+            modalTitle.textContent = 'Tambah Dosen Baru';
+            form.reset();
+            modal.classList.remove('hidden');
+        });
+
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newItem = {
+                nama: nama.value,
+                mataKuliah: mataKuliah.value,
+                kelas: kelas.value,
+                whatsapp: whatsapp.value,
+                linkGrup: linkGrup.value
+            };
+            if (editId) {
+                const index = data.findIndex(d => d.id === editId);
+                data[index] = { ...data[index], ...newItem };
+            } else {
+                newItem.id = Date.now();
+                data.push(newItem);
+            }
+            saveData(); // Simpan setelah perubahan
+            modal.classList.add('hidden');
+            filterData(currentFilter);
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        // Edit
+        function editItem(id) {
+            editId = id;
+            const item = data.find(d => d.id === id);
+            nama.value = item.nama;
+            mataKuliah.value = item.mataKuliah;
+            kelas.value = item.kelas;
+            whatsapp.value = item.whatsapp;
+            linkGrup.value = item.linkGrup;
+            modalTitle.textContent = 'Edit Dosen';
+            modal.classList.remove('hidden');
+        }
+
+        // Delete
+        function deleteItem(id) {
+            if (confirm('Yakin ingin menghapus?')) {
+                data = data.filter(d => d.id !== id);
+                saveData(); // Simpan setelah delete
+                filterData(currentFilter);
+            }
+        }
+
+        // Initial render
+        render();
+    </script>
+</body>
+</html>
